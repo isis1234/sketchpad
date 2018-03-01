@@ -21,6 +21,9 @@ function angleBetween(point1, point2) {
 function sketchpad_mouseDown(e){
     isDrawing = true;
     lastPoint = { x: e.clientX, y: e.clientY };
+    drawDot(ctx, e.clientX, e.clientY, dia);
+    $("#console_box").prepend("<" + (new Date()).toLocaleTimeString("en-us", options) + "> Keydown <br />");
+    $("#console_box").prepend("<" + (new Date()).toLocaleTimeString("en-us", options) + '> (' + e.clientX.toFixed(2) + ", " + e.clientY.toFixed(2) + ")<br />");
 }
 
 function sketchpad_mouseMove(e){
@@ -30,22 +33,19 @@ function sketchpad_mouseMove(e){
     var dist = distanceBetween(lastPoint, currentPoint);
     var angle = angleBetween(lastPoint, currentPoint);
 
-    for (var i = 0; i < dist; i+=5) {
+    for (var i = 0; i < dist; i+=2) {
         x = lastPoint.x + (Math.sin(angle) * i);
         y = lastPoint.y + (Math.cos(angle) * i);
-        ctx.beginPath();
-        ctx.arc(x, y, dia, 0, Math.PI * 2, true);
-        ctx.closePath();
-        ctx.fill();
-        // ctx.stroke();
+        drawDot(ctx, x, y, dia);
+        $("#console_box").prepend("<" + (new Date()).toLocaleTimeString("en-us", options) + '> (' + x.toFixed(2) + ", " + y.toFixed(2) + ")<br />");
     }
 
     lastPoint = currentPoint;
 }
 
 function sketchpad_mouseUp(){
-    //check drawing
     isDrawing = false;
+    $("#console_box").prepend("<" + (new Date()).toLocaleTimeString("en-us", options) + "> Keyup <br />");
 }
 
 function drawDot(ctx,x,y,size) {
@@ -57,8 +57,6 @@ function drawDot(ctx,x,y,size) {
     ctx.arc(x, y, size, 0, Math.PI*2, true); 
     ctx.closePath();
     ctx.fill();
-
-    // $("#console_box").prepend("<" + (new Date()).toLocaleTimeString("en-us", options) + '> (' + x + ", " + y + ")<br />");
 } 
 
 function clearCanvas(canvas,ctx) {
@@ -76,7 +74,7 @@ function defineSketchpad(){
     if (ctx) {
         canvas.addEventListener('mousedown', sketchpad_mouseDown, false);
         canvas.addEventListener('mousemove', sketchpad_mouseMove, false);
-        window.addEventListener('mouseup', sketchpad_mouseUp, false);
+        canvas.addEventListener('mouseup', sketchpad_mouseUp, false);
     }
 }
 
@@ -93,9 +91,9 @@ function defineColor(){
 }
 
 $(document).ready(function(){
-    $("#r").val(Math.random()*100);
-    $("#g").val(Math.random()*100);
-    $("#b").val(Math.random()*100);    
+    $("#r").val(Math.random()*200);
+    $("#g").val(Math.random()*200);
+    $("#b").val(Math.random()*200);    
     r = $("#r").val(); g=$("#g").val(); b=$("#b").val();
     dia = $("#dia").val();
 
@@ -149,7 +147,7 @@ $(document).ready(function(){
     });
 
     $("#view").click(function(){
-        $("#result").prepend("<image id='theimage' width='450' height='300'></image>");
+        $("#result").prepend("<image id='theimage'></image>");
         document.getElementById("theimage").src = canvas.toDataURL();
         $("#console_box").prepend("<" + (new Date()).toLocaleTimeString("en-us", options) + "> View Image<br />");
     });
@@ -157,5 +155,12 @@ $(document).ready(function(){
     $("#download").click(function(){
         Canvas2Image.saveAsPNG(canvas);
         $("#console_box").prepend("<" + (new Date()).toLocaleTimeString("en-us", options) + "> Download Image<br />");
+    });
+
+    $( window ).resize(function() {
+        clearCanvas(canvas_color, ctx_color);
+        canvas_color.width = $( "#colorside" ).width();
+        canvas_color.height = $( "#colorside" ).height();
+        drawDot(ctx_color,$( "#colorside" ).width()/2,$( "#colorside" ).height()/2, dia); 
     });
 });
